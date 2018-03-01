@@ -67,7 +67,7 @@ class SSDBParser:
             offset = self.pos + size
             # 如果请求的该行结束符不是\n的话
             if self.buf[offset:offset+1] != b'\n':
-                raise ProtocolError(msg="Expected b'\n'")
+                raise ProtocolError(msg="Expected b'\n', got {}".format(self.buf[offset:offset+1]))
         else:
             # 从self.pos开始查找b'\n'的最早出现的位置，如果没有返回-1
             offset = self.buf.find(b'\n', self.pos)
@@ -89,12 +89,12 @@ class SSDBParser:
             value = yield from self.read_line()
             return int(value)
         except ValueError:
-            raise ProtocolError("Expected int")
+            raise ProtocolError("Expected int, err value {}".format(value))
 
     def parse(self):
         size = yield from self.read_int()
         status = yield from self.read_line(size)
-        if status != 'ok':
+        if status != b'ok':
             return ReplyError(status)
         data = []
         try:
@@ -110,6 +110,8 @@ class SSDBParser:
                 size = yield from self.read_int()
             except ProtocolError:
                 break
+        if len(data) == 1:
+            data = data[0]
         return data
 
     def parse_one(self):

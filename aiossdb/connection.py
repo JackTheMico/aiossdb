@@ -14,7 +14,7 @@ _NOTSET = object()
 
 
 @asyncio.coroutine
-def create_connection(address, *, password=None, encoding='utf-8', parser=None, loop=None,
+def create_connection(address, *, password=None, encoding=None, parser=None, loop=None,
                       timeout=None, connect_cls=None, reusable=True):
     '''
     创建SSDB数据库连接
@@ -144,6 +144,10 @@ class SSDBConnection:
             obj.command = command
             set_exception(waiter, obj)
         else:
+            # region 处理返回值与pyssdb不一致的命令
+            if "size" in command or command == "zget":
+                obj = int(obj.decode())
+            # endregion
             set_result(waiter, obj)
 
     def execute(self, command, *args, encoding=_NOTSET):
