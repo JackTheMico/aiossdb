@@ -49,8 +49,10 @@ async def test_aiossdb_keys(event_loop):
     :return: None
     """
     aio_cli = Client(host="0.0.0.0", port=38888, loop=event_loop)
-    res = await aio_cli.keys("A", "F", 5)
-    assert res == [b'B', b'C', b'D', b'E', b'F']
+    res = await aio_cli.keys("A", "F", 1)
+    # res = await aio_cli.keys("A", "F", 5)
+    # assert res == [b'B', b'C', b'D', b'E', b'F']
+    assert res == [b'B']
     await aio_cli.close()
 
 
@@ -61,8 +63,10 @@ def test_pyssdb_keys():
     :return: None
     """
     py_cli = pyClient(host="0.0.0.0", port=38888)
-    res = py_cli.keys("A", "F", 5)
-    assert res == [b'B', b'C', b'D', b'E', b'F']
+    res = py_cli.keys("A", "F", 1)
+    # res = py_cli.keys("A", "F", 5)
+    # assert res == [b'B', b'C', b'D', b'E', b'F']
+    assert res == [b'B']
 
 
 @pytest.mark.asyncio
@@ -71,14 +75,12 @@ async def test_aiossdb_queue(event_loop):
     Keyword Arguments:
     event_loop --
     """
-    logger = logging.getLogger("aiossdb_queue")
     aio_cli = Client(host="0.0.0.0", port=38888, loop=event_loop)
     await aio_cli.qpush_front("aiossdb_queue", 123)
     await aio_cli.qpush_back("aiossdb_queue", 456)
     qsize = await aio_cli.qsize("aiossdb_queue")
     assert qsize == 2
     res = await aio_cli.qpop_front("aiossdb_queue", 1)
-    logger.debug(res)
     assert res == b"123"
     await aio_cli.qpop_front("aiossdb_queue", 1)
     await aio_cli.close()
@@ -177,7 +179,6 @@ def test_pyssdb_multi_zset():
 
     :return: None
     """
-    logger = logging.getLogger("pyssdb_kv")
     py_cli = pyClient(host="0.0.0.0", port=38888)
     test_list = ['key1', 1, 'key2', 2]
     get_list = ['key1', 'key2']
@@ -244,18 +245,42 @@ async def test_aiossdb_hashmd5(event_loop):
     await aio_cli.close()
 
 
+# @pytest.mark.asyncio
+# async def test_aiossdb_kv_bytes(event_loop):
+#     """
+
+#     :Keyword Arguments:
+#      event_loop --
+#     :return: None
+#     """
+#     aio_cli = Client(host="192.168.81.60", port=10302, loop=event_loop)
+#     await aio_cli.set("test_for_bytes", b"ehehasdfasgasd2134125asdg$#$#./,.2")
+#     res = await aio_cli.get("test_for_bytes")
+#     assert res == b'ehehasdfasgasd2134125asdg$#$#./,.2'
+#     res = await aio_cli.get("Cache|taskGroupLogic_7aed37c144e024adab2752b2c931ced1")
+#     assert res != b''
+#     await aio_cli.close()
+
+
 @pytest.mark.asyncio
-async def test_aiossdb_kv_bytes(event_loop):
+async def test_aiossdb_dbsize(event_loop):
     """
 
     :Keyword Arguments:
      event_loop --
     :return: None
     """
-    aio_cli = Client(host="192.168.81.60", port=10302, loop=event_loop)
-    # await aio_cli.set("test_for_bytes", b"ehehasdfasgasd2134125asdg$#$#./,.2")
-    # res = await aio_cli.get("test_for_bytes")
-    # assert res == b'ehehasdfasgasd2134125asdg$#$#./,.2'
-    res = await aio_cli.get("Cache|taskGroupLogic_7aed37c144e024adab2752b2c931ced1")
-    assert res != b''
+    aio_cli = Client(host="0.0.0.0", port=38888, loop=event_loop)
+    res = await aio_cli.dbsize()
+    assert type(res) == int
     await aio_cli.close()
+
+
+def test_pyssdb_dbsize():
+    """
+
+    :return: None
+    """
+    py_cli = pyClient(host="0.0.0.0", port=38888)
+    res = py_cli.dbsize()
+    assert type(res) == int

@@ -147,6 +147,8 @@ class SSDBConnection:
             # region 处理返回值与pyssdb不一致的命令
             if "size" in command or command == "zget":
                 obj = int(obj.decode())
+            if "keys" == command and isinstance(obj, bytearray):
+                obj = [obj]
             # endregion
             set_result(waiter, obj)
 
