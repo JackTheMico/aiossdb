@@ -99,6 +99,28 @@ def test_pyssdb_queue():
     logger.warning(res)
     assert res == b"123"
 
+@pytest.mark.asyncio
+async def test_aiossdb_qpop_front(event_loop):
+    """
+
+    :Keyword Arguments:
+     event_loop --
+    :return: None
+    """
+    aio_cli = Client(host="0.0.0.0", port=38888, loop=event_loop)
+    res = await aio_cli.qpop_front("non-exists", 5)
+    assert res == []
+    await aio_cli.close()
+
+def test_pyssdb_qpop_front():
+    """
+
+    :
+    :return: None
+    """
+    py_cli = pyClient(host="0.0.0.0", port=38888)
+    res = py_cli.qpop_front("non_exists", 1)
+    assert res == None
 
 @pytest.mark.asyncio
 async def test_aiossdb_queue_mult(event_loop):
